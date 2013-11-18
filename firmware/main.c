@@ -16,13 +16,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 
 #define LED	PB5
 #define SPEAKER	PB3
 #define BUTTON	PD2
+
+#define DEBOUNCE_TIME	250
 
 /*
  * The list of frequencies is taken from
@@ -52,15 +56,31 @@ void beep(uint16_t hertz, int32_t ms);
 void play_march(void);
 void delay_us(int16_t us);
 
+volatile bool button_released = false;
+
 int
 main(void)
 {
 	DDRB |= ((1<<LED) | (1<<SPEAKER));
 	PORTD |= (1<<BUTTON);
 
+	EICRA |= ((1<<ISC01) | (1<<ISC00));	/* INT0 IRQ on rising edge */
+	EIMSK |= (1<<INT0);
+
+	sei();
+
 	for (;;) {
-		if (PIND & (1<<BUTTON))
-			play_march();
+		if (button_released) {
+			button_released = false;
+
+			_delay_ms(DEBOUNCE_TIME);
+			if (PIND & (1<<BUTTON))
+				play_march();
+
+			/* Reset interrupt flag and reenable INT0 */
+			EIFR |= (1<<INTF0);
+			EIMSK |= (1<<INT0);
+		}
 	}
 }
 
@@ -134,4 +154,12 @@ play_march(void)
 	beep(f, 350);
 	beep(cH, 150);
 	beep(a, 1000);
+}
+
+ISR(INT0_vect)
+{
+	button_released = true;
+
+	/* Disable external interrupt INT0 */
+	EIMSK &= ~(1<<INT0);
 }
