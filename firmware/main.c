@@ -18,6 +18,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -52,9 +53,15 @@
 #define gSH 830
 #define aH 880
 
+void seed_rng(void);
 void beep(uint16_t hertz, int32_t ms);
-void play_march(void);
 void delay_us(int16_t us);
+
+void play_random(void);
+void play_march(void);
+void play_r2d2(void);
+void play_ohhh(void);
+void play_uhoh(void);
 
 volatile bool button_released = false;
 
@@ -67,6 +74,7 @@ main(void)
 	EICRA |= ((1<<ISC01) | (1<<ISC00));	/* INT0 IRQ on rising edge */
 	EIMSK |= (1<<INT0);
 
+	seed_rng();
 	sei();
 
 	for (;;) {
@@ -75,13 +83,28 @@ main(void)
 
 			_delay_ms(DEBOUNCE_TIME);
 			if (PIND & (1<<BUTTON))
-				play_march();
+				play_random();
 
 			/* Reset interrupt flag and reenable INT0 */
 			EIFR |= (1<<INTF0);
 			EIMSK |= (1<<INT0);
 		}
 	}
+}
+
+void
+seed_rng(void)
+{
+	ADMUX |= (1<<REFS0);
+	ADCSRA |= (1<<ADEN);
+
+	ADCSRA |= (1<<ADSC);
+	while (ADCSRA & (1<<ADSC))
+		/* no-op */;
+	srand(ADCL);
+
+	ADCSRA &= ~(1<<ADEN);
+	ADMUX &= ~(1<<REFS0);
 }
 
 void
@@ -129,13 +152,32 @@ delay_us(int16_t us)
 }
 
 void
+play_random(void)
+{
+	switch (rand() % 4) {
+	case 0:
+		play_march();
+		break;
+	case 1:
+		play_r2d2();
+		break;
+	case 2:
+		play_uhoh();
+		break;
+	case 3:
+		play_ohhh();
+		break;
+	}
+}
+
+void
 play_march(void)
 {
 	/*
 	 * The tune is taken from https://gist.github.com/tagliati/1804108
 	 */
 
-	beep(a,	500);
+	beep(a, 500);
 	beep(a, 500);
 	beep(a, 500);
 	beep(f, 350);
@@ -154,6 +196,68 @@ play_march(void)
 	beep(f, 350);
 	beep(cH, 150);
 	beep(a, 1000);
+}
+
+void
+play_r2d2(void)
+{
+	/*
+	 * Based on a function, found on
+	 * http://www.mycontraption.com/sound-effects-with-and-arduino/
+	 */
+
+	beep(a, 100);
+	beep(g, 100);
+	beep(e, 100);
+	beep(c, 100);
+	beep(d, 100);
+	beep(b, 100);
+	beep(f, 100);
+	beep(cH, 100);
+	beep(a, 100);
+	beep(g, 100);
+	beep(e, 100);
+	beep(c, 100);
+	beep(d, 100);
+	beep(b, 100);
+	beep(f, 100);
+	beep(cH, 100);
+}
+
+void
+play_ohhh(void)
+{
+	/*
+	 * Based on a function, found on
+	 * http://www.mycontraption.com/sound-effects-with-and-arduino/
+	 */
+
+	for (int16_t i = 1000; i < 2000; i = i * 1.02) {
+		beep(i, 10);
+	}
+
+	for (int16_t i = 2000; i > 1000; i = i * 0.98) {
+		beep(i, 10);
+	}
+}
+
+void
+play_uhoh(void)
+{
+	/*
+	 * Based on a function, found on
+	 * http://www.mycontraption.com/sound-effects-with-and-arduino/
+	 */
+
+	for (int16_t i = 1000; i < 1244; i = i * 1.01) {
+		beep(i, 30);
+	}
+
+	_delay_ms(200);
+
+	for (int16_t i = 1244; i > 1108; i = i * 0.99) {
+		beep(i, 30);
+	}
 }
 
 ISR(INT0_vect)
