@@ -71,7 +71,7 @@ main(void)
 	DDRB |= ((1<<LED) | (1<<SPEAKER));
 	PORTD |= (1<<BUTTON);
 
-	EICRA |= ((1<<ISC01) | (1<<ISC00));	/* INT0 IRQ on rising edge */
+	EICRA |= (1<<ISC01);	/* INT0 IRQ on falling edge */
 	EIMSK |= (1<<INT0);
 
 	seed_rng();
@@ -82,7 +82,7 @@ main(void)
 			button_released = false;
 
 			_delay_ms(DEBOUNCE_TIME);
-			if (PIND & (1<<BUTTON))
+			if (!(PIND & (1<<BUTTON)))
 				play_random();
 
 			/* Reset interrupt flag and reenable INT0 */
