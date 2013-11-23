@@ -53,6 +53,11 @@
 #define gSH 830
 #define aH 880
 
+#define BEEP_DELAY(hertz, ms)	do {					\
+	beep((hertz), (ms));						\
+	_delay_ms(20);							\
+} while (0)
+
 void seed_rng(void);
 void beep(uint16_t hertz, int32_t ms);
 void delay_us(int16_t us);
@@ -126,8 +131,6 @@ beep(uint16_t hertz, int32_t ms)
 		PORTB &= ~((1<<SPEAKER) | (1<<LED));
 		delay_us(delay);
 	}
-
-	_delay_ms(20);
 }
 
 void
@@ -177,25 +180,25 @@ play_march(void)
 	 * The tune is taken from https://gist.github.com/tagliati/1804108
 	 */
 
-	beep(a, 500);
-	beep(a, 500);
-	beep(a, 500);
-	beep(f, 350);
-	beep(cH, 150);
-	beep(a, 500);
-	beep(f, 350);
-	beep(cH, 150);
-	beep(a, 1000);
+	BEEP_DELAY(a, 500);
+	BEEP_DELAY(a, 500);
+	BEEP_DELAY(a, 500);
+	BEEP_DELAY(f, 350);
+	BEEP_DELAY(cH, 150);
+	BEEP_DELAY(a, 500);
+	BEEP_DELAY(f, 350);
+	BEEP_DELAY(cH, 150);
+	BEEP_DELAY(a, 1000);
 	
-	beep(eH, 500);
-	beep(eH, 500);
-	beep(eH, 500);
-	beep(fH, 350);
-	beep(cH, 150);
-	beep(gS, 500);
-	beep(f, 350);
-	beep(cH, 150);
-	beep(a, 1000);
+	BEEP_DELAY(eH, 500);
+	BEEP_DELAY(eH, 500);
+	BEEP_DELAY(eH, 500);
+	BEEP_DELAY(fH, 350);
+	BEEP_DELAY(cH, 150);
+	BEEP_DELAY(gS, 500);
+	BEEP_DELAY(f, 350);
+	BEEP_DELAY(cH, 150);
+	BEEP_DELAY(a, 1000);
 }
 
 void
@@ -206,22 +209,22 @@ play_r2d2(void)
 	 * http://www.mycontraption.com/sound-effects-with-and-arduino/
 	 */
 
-	beep(a, 100);
-	beep(g, 100);
-	beep(e, 100);
-	beep(c, 100);
-	beep(d, 100);
-	beep(b, 100);
-	beep(f, 100);
-	beep(cH, 100);
-	beep(a, 100);
-	beep(g, 100);
-	beep(e, 100);
-	beep(c, 100);
-	beep(d, 100);
-	beep(b, 100);
-	beep(f, 100);
-	beep(cH, 100);
+	BEEP_DELAY(a, 100);
+	BEEP_DELAY(g, 100);
+	BEEP_DELAY(e, 100);
+	BEEP_DELAY(c, 100);
+	BEEP_DELAY(d, 100);
+	BEEP_DELAY(b, 100);
+	BEEP_DELAY(f, 100);
+	BEEP_DELAY(cH, 100);
+	BEEP_DELAY(a, 100);
+	BEEP_DELAY(g, 100);
+	BEEP_DELAY(e, 100);
+	BEEP_DELAY(c, 100);
+	BEEP_DELAY(d, 100);
+	BEEP_DELAY(b, 100);
+	BEEP_DELAY(f, 100);
+	BEEP_DELAY(cH, 100);
 }
 
 void
