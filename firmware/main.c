@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/sleep.h>
 #include <util/delay.h>
 
 #define LED	PB5
@@ -89,11 +90,10 @@ main(void)
 			_delay_ms(DEBOUNCE_TIME);
 			if (!(PIND & (1<<BUTTON)))
 				play_random();
-
-			/* Reset interrupt flag and reenable INT0 */
-			EIFR |= (1<<INTF0);
-			EIMSK |= (1<<INT0);
 		}
+
+		set_sleep_mode(SLEEP_MODE_STANDBY);
+		sleep_mode();
 	}
 }
 
@@ -266,7 +266,4 @@ play_uhoh(void)
 ISR(INT0_vect)
 {
 	button_released = true;
-
-	/* Disable external interrupt INT0 */
-	EIMSK &= ~(1<<INT0);
 }
