@@ -25,7 +25,8 @@
 #include <util/delay.h>
 
 #define LED	PB5
-#define SPEAKER	PB3
+#define MOODY	PB4
+#define SPEAKER	PC5
 #define BUTTON	PD2
 
 #define DEBOUNCE_TIME	250
@@ -74,7 +75,8 @@ volatile bool button_released = false;
 int
 main(void)
 {
-	DDRB |= ((1<<LED) | (1<<SPEAKER));
+	DDRC |= (1<<SPEAKER);
+	DDRB |= ((1<<MOODY) | (1<<LED));
 	PORTD |= (1<<BUTTON);
 
 	EICRA |= (1<<ISC01);	/* INT0 IRQ on falling edge */
@@ -88,8 +90,11 @@ main(void)
 			button_released = false;
 
 			_delay_ms(DEBOUNCE_TIME);
-			if (!(PIND & (1<<BUTTON)))
+			if (!(PIND & (1<<BUTTON))) {
+				PORTB |= (1<<MOODY);
 				play_random();
+				PORTB &= ~((1<<MOODY));
+			}
 		}
 
 		set_sleep_mode(SLEEP_MODE_STANDBY);
@@ -125,10 +130,18 @@ beep(uint16_t hertz, int32_t ms)
 
 	for (int16_t i=0; i < iterations; i++)
 	{
-		PORTB |= ((1<<SPEAKER) | (1<<LED));
+#ifdef SILENT
+		PORTB |= (1<<LED);
+#else
+		PORTC |= (1<<SPEAKER);
+#endif
 		delay_us(delay);
 
-		PORTB &= ~((1<<SPEAKER) | (1<<LED));
+#ifdef SILENT
+		PORTB &= ~((1<<LED));
+#else
+		PORTC &= ~((1<<SPEAKER));
+#endif
 		delay_us(delay);
 	}
 }
